@@ -192,6 +192,17 @@ impl<W: tokio::io::AsyncRead + Unpin> tokio::io::AsyncRead for ProgressBarIter<W
 }
 
 #[cfg(feature = "tokio")]
+impl ProgressBarIter<tokio::fs::File> {
+    pub async fn try_clone(&self) -> Result<Self, tokio::io::Error> {
+        let cloned = self.it.try_clone().await?;
+        Ok(Self{
+            it: cloned,
+            progress: self.progress.clone(),
+        })
+    }
+}
+
+#[cfg(feature = "tokio")]
 impl<W: tokio::io::AsyncSeek + Unpin> tokio::io::AsyncSeek for ProgressBarIter<W> {
     fn start_seek(mut self: Pin<&mut Self>, position: SeekFrom) -> io::Result<()> {
         Pin::new(&mut self.it).start_seek(position)
